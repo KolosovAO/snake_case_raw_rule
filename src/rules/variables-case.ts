@@ -1,8 +1,8 @@
 import { TSESLint, AST_NODE_TYPES, TSESTree } from "@typescript-eslint/experimental-utils";
 
-const SHOULD_BE_SNAKE_CASE = "shouldBeSnakeCase";
-const SHOULD_BE_CAMEL_CASE = "shouldBeCamelCase";
-const SHOULD_BE_PASCAL_CASE = "shouldBePascalCase";
+const SHOULD_BE_SNAKE_CASE = "0";
+const SHOULD_BE_CAMEL_CASE = "1";
+const SHOULD_BE_PASCAL_CASE = "2";
 
 const ERROR_MESSAGE = {
     [SHOULD_BE_CAMEL_CASE]: "should be camel case",
@@ -23,7 +23,6 @@ const SNAKE_CASE_NODE_INIT = new Set([
     AST_NODE_TYPES.ArrayExpression,
     AST_NODE_TYPES.BinaryExpression,
     AST_NODE_TYPES.JSXElement,
-    AST_NODE_TYPES.RestElement,
 ]);
 
 const CAMEL_CASE_NODE_INIT = new Set([
@@ -50,6 +49,7 @@ const reportCamelCase = report(SHOULD_BE_CAMEL_CASE);
 function check(context:TSESLint.RuleContext<MessageIds, Options>, type: AST_NODE_TYPES, id:TSESTree.Identifier):void {
     if (SNAKE_CASE_NODE_INIT.has(type) && !isSnakeCase(id.name)) {
         reportSnakeCase(context, id);
+        return;
     }
 
     if (CAMEL_CASE_NODE_INIT.has(type) && isSnakeCase(id.name)) {
@@ -67,9 +67,14 @@ export const variables_case:TSESLint.RuleModule<MessageIds, Options> = {
     create: (context) => {
         return {
             VariableDeclarator({id, init}) {
-                if (id.type === AST_NODE_TYPES.Identifier && init) {
-                    if (!isSnakeCaseCapitalized(id.name)) {
-                        check(context, init.type, id);
+                if (id.type === AST_NODE_TYPES.Identifier && init && !isSnakeCaseCapitalized(id.name)) {
+                    check(context, init.type, id);
+                }
+            },
+            RestElement({argument}) {
+                if (argument.type === AST_NODE_TYPES.Identifier) {
+                    if (!isSnakeCase(argument.name)) {
+                        reportSnakeCase(context, argument);
                     }
                 }
             },

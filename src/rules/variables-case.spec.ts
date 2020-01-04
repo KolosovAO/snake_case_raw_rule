@@ -21,28 +21,32 @@ tester.run("variables_case", variables_case, {
                 const some_bool = true;
                 const doSomething = () => null;
 
-                const array_with = [1, 2, 3];
+                const test_array = [1, 2, 3];
 
-                const object_with = {
+                const test_obj = {
                     a: 1,
                     b: 2,
                     doSomething: () => null,
                     some_var: []
                 };
 
-                function whatAfunc() {
+                const {a, b, ...other_items} = test_obj;
+                const [el1, el2, ...other_array_items] = test_array;
+
+                function testFunc() {
                     return 42;
                 }
 
                 function Component() {}
 
-                class Ab {
+                class TestClass {
                     private test_num = 25;
+                    private testFunc() {
+                        
+                    }
                 }
             `,
         },
     ],
-    invalid: [
-
-    ],
+    invalid: [],
 });
