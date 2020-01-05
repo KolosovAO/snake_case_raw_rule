@@ -15,6 +15,12 @@ tester.run("variables_case", variables_case, {
     valid: [
         {
             code: `
+                interface ITest {
+                    twenty_two: 22;
+                    callableFn: () => void;
+                    bool_var: boolean;
+                }
+
                 const MAGIC_NUMBER = 364;
                 const some_number = 25;
                 const some_string = "str";

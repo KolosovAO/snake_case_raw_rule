@@ -98,6 +98,29 @@ export const variables_case:TSESLint.RuleModule<MessageIds, Options> = {
                     reportPascalCase(context, id);
                 }
             },
+            TSPropertySignature({key, typeAnnotation}) {
+                if (!typeAnnotation || key.type !== AST_NODE_TYPES.Identifier) {
+                    return;
+                }
+                switch(typeAnnotation.typeAnnotation.type) {
+                    case AST_NODE_TYPES.TSFunctionType:
+                        if (isSnakeCase(key.name)) {
+                            reportCamelCase(context, key);
+                        }
+                        break;
+                    case AST_NODE_TYPES.TSTypeLiteral:
+                    case AST_NODE_TYPES.TSArrayType:
+                    case AST_NODE_TYPES.TSTupleType:
+                    case AST_NODE_TYPES.TSBooleanKeyword:
+                    case AST_NODE_TYPES.TSNumberKeyword:
+                    case AST_NODE_TYPES.TSStringKeyword:
+                    case AST_NODE_TYPES.TSObjectKeyword:
+                        if (!isSnakeCase(key.name)) {
+                            reportSnakeCase(context, key);
+                        }
+                        break;
+                }
+            },
             ClassDeclaration({id}) {
                 if (id && !isPascalCase(id.name)) {
                     reportPascalCase(context, id);
