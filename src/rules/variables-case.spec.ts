@@ -43,6 +43,8 @@ tester.run("variables_case", variables_case, {
                     return 42;
                 }
 
+                function func() {}
+
                 function Component() {}
 
                 class TestClass {

@@ -16,6 +16,7 @@ type MessageIds = keyof typeof ERROR_MESSAGE;
 const isSnakeCaseCapitalized = (str:string):boolean => /^[A-Z0-9]+(_[A-Z0-9]+)*$/.test(str);
 const isSnakeCase = (str:string):boolean => /^[a-z0-9]+(_[a-z0-9]+)*$/.test(str);
 const isPascalCase = (str:string):boolean => /^([A-Z][a-z0-9]+)+$/.test(str);
+const hasUnderscore = (str:string):boolean => str.indexOf("_") !== -1;
 
 const SNAKE_CASE_NODE_INIT = new Set([
     AST_NODE_TYPES.Literal,
@@ -52,7 +53,7 @@ function check(context:TSESLint.RuleContext<MessageIds, Options>, type: AST_NODE
         return;
     }
 
-    if (CAMEL_CASE_NODE_INIT.has(type) && isSnakeCase(id.name)) {
+    if (CAMEL_CASE_NODE_INIT.has(type) && hasUnderscore(id.name)) {
         reportCamelCase(context, id);
     }
 }
@@ -89,7 +90,7 @@ export const variables_case:TSESLint.RuleModule<MessageIds, Options> = {
                 }
             },
             FunctionDeclaration({id}) {
-                if (id && isSnakeCase(id.name)) {
+                if (id && hasUnderscore(id.name)) {
                     reportCamelCase(context, id);
                 }
             },
@@ -104,7 +105,7 @@ export const variables_case:TSESLint.RuleModule<MessageIds, Options> = {
                 }
                 switch(typeAnnotation.typeAnnotation.type) {
                     case AST_NODE_TYPES.TSFunctionType:
-                        if (isSnakeCase(key.name)) {
+                        if (hasUnderscore(key.name)) {
                             reportCamelCase(context, key);
                         }
                         break;
