@@ -1,5 +1,6 @@
 import { TSESLint } from "@typescript-eslint/experimental-utils";
 import { variables_case } from "./variables-case";
+import path from "path";
 
 const parser = require.resolve("@typescript-eslint/parser");
 
@@ -8,12 +9,14 @@ const tester = new TSESLint.RuleTester({
     parserOptions: {
         ecmaVersion: 6,
         sourceType: "module",
+        project: "./testtsconfig.json"
     },
 });
 
 tester.run("variables_case", variables_case, {
     valid: [
         {
+            filename: path.join(__dirname, "test.ts"),
             code: `
                 interface ITest {
                     twenty_two: 22;

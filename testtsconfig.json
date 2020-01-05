@@ -1,0 +1,13 @@
+{
+    "compilerOptions": {
+        "target": "es2015",
+        "module": "commonjs",
+        "declaration": true,
+        "strict": true,
+        "moduleResolution": "node",
+        "esModuleInterop": true
+    },
+    "files": [
+        "src/rules/test.ts"
+    ]
+}
