@@ -52,11 +52,12 @@ tester.run("variables_case", variables_case, {
 
                 function Component() {}
 
+                type Fn = () => void;
+
                 class TestClass {
                     private test_num = 25;
-                    private testFunc() {
-                        
-                    }
+                    private testFn:Fn;
+                    private testFunc() {}
                 }
             `,
         },

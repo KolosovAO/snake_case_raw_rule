@@ -1,4 +1,5 @@
 import { TSESLint, AST_NODE_TYPES, TSESTree } from "@typescript-eslint/experimental-utils";
+import { isFunctionType } from "../utils/is-function-type";
 
 const SHOULD_BE_SNAKE_CASE = "0";
 const SHOULD_BE_CAMEL_CASE = "1";
@@ -82,6 +83,20 @@ function checkTypes(context:TSESLint.RuleContext<MessageIds, Options>, type: AST
     }
 }
 
+function checkTypeAnnotation(context:TSESLint.RuleContext<MessageIds, Options>, id:TSESTree.Identifier, typeAnnotation = id.typeAnnotation):void {
+    if (!typeAnnotation || typeAnnotation.typeAnnotation.type !== AST_NODE_TYPES.TSTypeReference) {
+        return;
+    }
+
+    if (isFunctionType(context, typeAnnotation.typeAnnotation)) {
+        if (hasUnderscore(id.name)) {
+            reportCamelCase(context, id);
+        }
+    } else if (!isSnakeCase(id.name)) {
+        reportSnakeCase(context, id);
+    }
+}
+
 export const variables_case:TSESLint.RuleModule<MessageIds, Options> = {
     meta: {
         type: "problem",
@@ -95,6 +110,8 @@ export const variables_case:TSESLint.RuleModule<MessageIds, Options> = {
                 if (id.type !== AST_NODE_TYPES.Identifier) {
                     return;
                 }
+
+                checkTypeAnnotation(context, id);
 
                 if (init && !isSnakeCaseCapitalized(id.name)) {
                     checkInit(context, init.type, id);
@@ -117,9 +134,9 @@ export const variables_case:TSESLint.RuleModule<MessageIds, Options> = {
                     return;
                 }
 
-                const type = typeAnnotation?.typeAnnotation.type;
-                if (type) {
-                    checkTypes(context, type, key);
+                if (typeAnnotation) {
+                    checkTypeAnnotation(context, key, typeAnnotation);
+                    checkTypes(context, typeAnnotation.typeAnnotation.type, key);
                 }
 
                 if (value) {
@@ -135,7 +152,7 @@ export const variables_case:TSESLint.RuleModule<MessageIds, Options> = {
                     if (param.type !== AST_NODE_TYPES.Identifier || !param.typeAnnotation) {
                         continue;
                     }
-
+                    checkTypeAnnotation(context, param);
                     checkTypes(context, param.typeAnnotation.typeAnnotation.type, param);
                 }
             },
@@ -149,6 +166,7 @@ export const variables_case:TSESLint.RuleModule<MessageIds, Options> = {
                     return;
                 }
 
+                checkTypeAnnotation(context, key, typeAnnotation);
                 checkTypes(context, typeAnnotation.typeAnnotation.type, key);
             },
             ClassDeclaration({id}) {
