@@ -45,6 +45,8 @@ tester.run("variables_case", variables_case, {
 
                 function func() {}
 
+                function funcWithParams(num_param: number, funcParam: () => void) {}
+
                 function Component() {}
 
                 class TestClass {

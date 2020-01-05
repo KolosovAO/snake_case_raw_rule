@@ -31,6 +31,20 @@ const CAMEL_CASE_NODE_INIT = new Set([
     AST_NODE_TYPES.FunctionExpression,
 ]);
 
+const SNAKE_CASE_TYPES = new Set([
+    AST_NODE_TYPES.TSTypeLiteral,
+    AST_NODE_TYPES.TSArrayType,
+    AST_NODE_TYPES.TSTupleType,
+    AST_NODE_TYPES.TSBooleanKeyword,
+    AST_NODE_TYPES.TSNumberKeyword,
+    AST_NODE_TYPES.TSStringKeyword,
+    AST_NODE_TYPES.TSObjectKeyword,
+]);
+
+const CAMEL_CASE_TYPES = new Set([
+    AST_NODE_TYPES.TSFunctionType,
+]);
+
 function report(messageId:MessageIds): (context:TSESLint.RuleContext<MessageIds, Options>, node:TSESTree.Identifier) => void {
     return (context, node) => {
         context.report({
@@ -47,13 +61,23 @@ const reportSnakeCase = report(SHOULD_BE_SNAKE_CASE);
 const reportPascalCase = report(SHOULD_BE_PASCAL_CASE);
 const reportCamelCase = report(SHOULD_BE_CAMEL_CASE);
 
-function check(context:TSESLint.RuleContext<MessageIds, Options>, type: AST_NODE_TYPES, id:TSESTree.Identifier):void {
+function checkInit(context:TSESLint.RuleContext<MessageIds, Options>, type: AST_NODE_TYPES, id:TSESTree.Identifier):void {
     if (SNAKE_CASE_NODE_INIT.has(type) && !isSnakeCase(id.name)) {
         reportSnakeCase(context, id);
         return;
     }
 
     if (CAMEL_CASE_NODE_INIT.has(type) && hasUnderscore(id.name)) {
+        reportCamelCase(context, id);
+    }
+}
+
+function checkTypes(context:TSESLint.RuleContext<MessageIds, Options>, type: AST_NODE_TYPES, id:TSESTree.Identifier):void {
+    if (SNAKE_CASE_TYPES.has(type) && !isSnakeCase(id.name)) {
+        reportSnakeCase(context, id);
+    }
+
+    if (CAMEL_CASE_TYPES.has(type) && hasUnderscore(id.name)) {
         reportCamelCase(context, id);
     }
 }
@@ -68,8 +92,12 @@ export const variables_case:TSESLint.RuleModule<MessageIds, Options> = {
     create: (context) => {
         return {
             VariableDeclarator({id, init}) {
-                if (id.type === AST_NODE_TYPES.Identifier && init && !isSnakeCaseCapitalized(id.name)) {
-                    check(context, init.type, id);
+                if (id.type !== AST_NODE_TYPES.Identifier) {
+                    return;
+                }
+
+                if (init && !isSnakeCaseCapitalized(id.name)) {
+                    checkInit(context, init.type, id);
                 }
             },
             RestElement({argument}) {
@@ -81,17 +109,34 @@ export const variables_case:TSESLint.RuleModule<MessageIds, Options> = {
             },
             Property({key, value}) {
                 if (key.type === AST_NODE_TYPES.Identifier && value) {
-                    check(context, value.type, key);
+                    checkInit(context, value.type, key);
                 }
             },
-            ClassProperty({key, value}) {
-                if (key.type === AST_NODE_TYPES.Identifier && value) {
-                    check(context, value.type, key);
+            ClassProperty({key, value, typeAnnotation}) {
+                if (key.type !== AST_NODE_TYPES.Identifier) {
+                    return;
+                }
+
+                const type = typeAnnotation?.typeAnnotation.type;
+                if (type) {
+                    checkTypes(context, type, key);
+                }
+
+                if (value) {
+                    checkInit(context, value.type, key);
                 }
             },
-            FunctionDeclaration({id}) {
+            FunctionDeclaration({id, params}) {
                 if (id && hasUnderscore(id.name)) {
                     reportCamelCase(context, id);
+                }
+
+                for (const param of params) {
+                    if (param.type !== AST_NODE_TYPES.Identifier || !param.typeAnnotation) {
+                        continue;
+                    }
+
+                    checkTypes(context, param.typeAnnotation.typeAnnotation.type, param);
                 }
             },
             TSEnumDeclaration({id}) {
@@ -103,24 +148,8 @@ export const variables_case:TSESLint.RuleModule<MessageIds, Options> = {
                 if (!typeAnnotation || key.type !== AST_NODE_TYPES.Identifier) {
                     return;
                 }
-                switch(typeAnnotation.typeAnnotation.type) {
-                    case AST_NODE_TYPES.TSFunctionType:
-                        if (hasUnderscore(key.name)) {
-                            reportCamelCase(context, key);
-                        }
-                        break;
-                    case AST_NODE_TYPES.TSTypeLiteral:
-                    case AST_NODE_TYPES.TSArrayType:
-                    case AST_NODE_TYPES.TSTupleType:
-                    case AST_NODE_TYPES.TSBooleanKeyword:
-                    case AST_NODE_TYPES.TSNumberKeyword:
-                    case AST_NODE_TYPES.TSStringKeyword:
-                    case AST_NODE_TYPES.TSObjectKeyword:
-                        if (!isSnakeCase(key.name)) {
-                            reportSnakeCase(context, key);
-                        }
-                        break;
-                }
+
+                checkTypes(context, typeAnnotation.typeAnnotation.type, key);
             },
             ClassDeclaration({id}) {
                 if (id && !isPascalCase(id.name)) {
