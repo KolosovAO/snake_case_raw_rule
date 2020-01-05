@@ -11,4 +11,3 @@ declare type Options = [];
 declare type MessageIds = keyof typeof ERROR_MESSAGE;
 export declare const variables_case: TSESLint.RuleModule<MessageIds, Options>;
 export {};
-//# sourceMappingURL=variables-case.d.ts.map

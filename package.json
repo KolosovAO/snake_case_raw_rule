@@ -1,5 +1,5 @@
 {
-	"name": "variables-case",
+	"name": "eslint-plugin-variables-case",
 	"version": "1.0.0",
 	"description": "",
 	"main": "lib/index.js",

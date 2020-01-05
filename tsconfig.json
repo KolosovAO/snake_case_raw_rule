@@ -3,12 +3,13 @@
         "target": "es2015",
         "module": "commonjs",
         "declaration": true,
-        "declarationMap": true,
-        "sourceMap": true,
         "outDir": "./lib",
         "rootDir": "./src",
         "strict": true,
         "moduleResolution": "node",
         "esModuleInterop": true
-    }
+    },
+    "exclude": [
+        "**/*.spec.ts"
+    ]
 }
