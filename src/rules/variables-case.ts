@@ -6,9 +6,9 @@ const SHOULD_BE_CAMEL_CASE = "1";
 const SHOULD_BE_PASCAL_CASE = "2";
 
 const ERROR_MESSAGE = {
-    [SHOULD_BE_CAMEL_CASE]: "should be camel case",
-    [SHOULD_BE_SNAKE_CASE]: "should be snake case",
-    [SHOULD_BE_PASCAL_CASE]: "should be pascal case",
+    [SHOULD_BE_CAMEL_CASE]: "{identifier} should be camel case",
+    [SHOULD_BE_SNAKE_CASE]: "{identifier} should be snake case",
+    [SHOULD_BE_PASCAL_CASE]: "{identifier} should be pascal case",
 } as const;
 
 type Options = [];
